@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 POSTGRES = {
   'user': 'user',
-  'pw': 'pw',
+  'pw': 'hello',
   'db': 'db',
   'host': 'host',
   'port': '5432'

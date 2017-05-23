@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Date, Float
+from sqlalchemy import Column, Integer, String, Date, Float, ForeignKey
+from sqlalchemy.orm import relationship
 from database import Base
 
 class User(Base):
@@ -47,12 +48,13 @@ class ShopFunnel(Base):
 
   def __repr__(self):
     return '<ShopFunnel %r, %r, %r>' % (self.shop_id, self.date, self.profile)
+
   @property
   def serialize(self):
     """Return object data in easily serializeable format"""
     return {
       'shop_id': self.shop_id,
-      'date': self.date,
+      'date': self.date.strftime("%Y-%m-%d"),
       'profile': self.profile,
       'out': self.out,
       'visitors': self.visitors,
@@ -69,3 +71,38 @@ class ShopFunnel(Base):
 
   def as_dict(self):
     return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+class Tag(Base):
+  __tablename__ = 'tags'
+  id = Column(Integer, primary_key=True)
+  name = Column(String)
+  taggings = relationship('Tagging', backref='tag', lazy='dynamic')
+
+  @property
+  def serialize(self):
+    """Return object data in easily serializeable format"""
+    return {
+      'id': self.id,
+      'name': self.name,
+      'taggings': [tagging.serialize for tagging in self.taggings]
+   }
+
+  def __repr__(self):
+    return '<Tag %r, %r, %r>' % (self.id, self.name, self.taggings)
+
+class Tagging(Base):
+  __tablename__ = 'taggings'
+  id = Column(Integer, primary_key=True)
+  tag_id = Column(Integer, ForeignKey('tags.id'))
+  taggable_id = Column(Integer)
+  taggable_type = Column(String)
+
+  @property
+  def serialize(self):
+    """Return object data in easily serializeable format"""
+    return {
+      'id': self.id,
+      'tag_id': self.tag_id,
+      'taggable_id': self.taggable_id,
+      'taggable_type': self.taggable_type
+   }
